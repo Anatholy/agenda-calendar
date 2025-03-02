@@ -1,29 +1,47 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, I18nManager } from 'react-native';
-import { AgendaCalendarProps, Event } from '../';
+import {AgendaCalendarProps, Event, LocalizationSettings} from '../';
 import Calendar from '../Calendar';
 import EventList from '../EventList';
 
+const DEFAULT_LOCALIZATION: LocalizationSettings = {
+  locale: 'en-US',
+  weekDayNames: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  monthNames: [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ],
+  dateFormat: {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  },
+  timeFormat: {
+    hour: '2-digit',
+    minute: '2-digit'
+  }
+};
+
 function AgendaCalendar<T extends Event>(props: AgendaCalendarProps<T>) {
-  const { 
-    events = [], 
+  const {
+    events = [],
     onEventPress,
     renderItem,
     style,
     isRTL = false,
-    localization
+    localization = DEFAULT_LOCALIZATION,
   } = props;
-  
+
   useEffect(() => {
     if (I18nManager.isRTL !== isRTL) {
       I18nManager.forceRTL(isRTL);
     }
   }, [isRTL]);
 
-  
+
   return (
     <View style={[
-      styles.container, 
+      styles.container,
       style,
     ]}>
       <Calendar isRTL={isRTL} localization={localization} />
@@ -44,4 +62,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AgendaCalendar; 
+export default AgendaCalendar;

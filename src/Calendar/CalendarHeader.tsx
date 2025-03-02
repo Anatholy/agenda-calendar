@@ -21,7 +21,8 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   localization,
 }) => {
   const formatHeaderDate = () => {
-    const monthName = selectedDate.toLocaleString(localization?.locale || 'default', { month: 'long' });
+    const monthName = localization?.monthNames[selectedDate.getMonth()] || 
+      selectedDate.toLocaleString(localization?.locale || 'default', { month: 'long' });
     const year = selectedDate.getFullYear();
     
     if (mode === 'week') {

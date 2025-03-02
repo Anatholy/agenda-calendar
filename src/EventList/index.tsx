@@ -6,31 +6,16 @@ interface EventListProps<T extends Event> {
   events: T[];
   onEventPress?: (event: T) => void;
   renderItem?: (event: T) => React.ReactElement;
-  isRTL?: boolean;
-  localization?: LocalizationSettings;
+  isRTL: boolean;
+  localization: LocalizationSettings;
 }
 
-const DEFAULT_LOCALIZATION: LocalizationSettings = {
-  locale: 'en-US',
-  dateFormat: {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  },
-  timeFormat: {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  }
-};
-
-function EventList<T extends Event>({ 
-  events, 
-  onEventPress, 
+function EventList<T extends Event>({
+  events,
+  onEventPress,
   renderItem,
-  isRTL = false,
-  localization = DEFAULT_LOCALIZATION
+  isRTL,
+  localization
 }: EventListProps<T>) {
   const defaultRenderItem = (event: T) => (
     <View style={styles.eventContainer}>
@@ -59,13 +44,13 @@ function EventList<T extends Event>({
   );
 
   return (
-    <ScrollView 
+    <ScrollView
       style={styles.eventList}
     >
       {sortedDates.map(date => (
         <View key={date}>
           <Text style={[
-            styles.dateHeader, 
+            styles.dateHeader,
             isRTL && styles.rtlText
           ]}>
             {new Date(date).toLocaleDateString(
@@ -74,8 +59,8 @@ function EventList<T extends Event>({
             )}
           </Text>
           {groupedEvents[date].map((event) => (
-            <View 
-              key={event.id} 
+            <View
+              key={event.id}
               onTouchEnd={() => onEventPress?.(event)}
             >
               {renderItem ? renderItem(event) : defaultRenderItem(event)}
@@ -128,4 +113,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EventList; 
+export default EventList;

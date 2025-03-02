@@ -8,6 +8,11 @@ import { events } from './data/events';
 const LOCALIZATIONS: Record<string, LocalizationSettings> = {
   'English (US)': {
     locale: 'en-US',
+    weekDayNames: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    monthNames: [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ],
     dateFormat: {
       weekday: 'long',
       year: 'numeric',
@@ -22,6 +27,11 @@ const LOCALIZATIONS: Record<string, LocalizationSettings> = {
   },
   'Hebrew': {
     locale: 'he-IL',
+    weekDayNames: ['א\'', 'ב\'', 'ג\'', 'ד\'', 'ה\'', 'ו\'', 'ש\''],
+    monthNames: [
+      'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
+      'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'
+    ],
     dateFormat: {
       weekday: 'long',
       year: 'numeric',
@@ -36,6 +46,11 @@ const LOCALIZATIONS: Record<string, LocalizationSettings> = {
   },
   'Arabic': {
     locale: 'ar-SA',
+    weekDayNames: ['الأحد', 'الأثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
+    monthNames: [
+      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+    ],
     dateFormat: {
       weekday: 'long',
       year: 'numeric',
@@ -50,6 +65,11 @@ const LOCALIZATIONS: Record<string, LocalizationSettings> = {
   },
   'Russian': {
     locale: 'ru-RU',
+    weekDayNames: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
+    monthNames: [
+      'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+      'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+    ],
     dateFormat: {
       weekday: 'long',
       year: 'numeric',

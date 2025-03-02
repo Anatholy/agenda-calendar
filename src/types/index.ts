@@ -19,6 +19,16 @@ export interface LocalizationSettings {
   dateFormat?: Intl.DateTimeFormatOptions;
   /** Time formatting options */
   timeFormat?: Intl.DateTimeFormatOptions;
+  /**
+   * Names of weekdays, starting from Sunday
+   * Example: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+   */
+  weekDayNames: string[];
+  /**
+   * Names of months, starting from January
+   * Example: ['January', 'February', 'March', ...]
+   */
+  monthNames: string[];
 }
 
 /**
