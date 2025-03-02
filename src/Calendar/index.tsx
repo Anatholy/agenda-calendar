@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { AgendaCalendarProps, Event } from '../types';
-import { LocalizationSettings } from '../types';
-
-type ViewMode = 'month' | 'week';
-type SlotView = { month: number, year: number, week: number };
+import React, {useEffect, useState} from 'react';
+import {StyleSheet, View} from 'react-native';
+import {Event, LocalizationSettings} from '../types';
+import {CalendarView} from "./CalendarView";
+import {SlotView, ViewMode} from "./types";
+import {CalendarHeader} from "./CalendarHeader";
+import {CalendarSwiper} from "./CalendarSwiper";
 
 interface CalendarProps<T extends Event> {
   isRTL?: boolean;
@@ -14,6 +14,7 @@ interface CalendarProps<T extends Event> {
   onDateChange?: (date: Date) => void;
   events?: T[];
 }
+
 function Calendar<T extends Event>(props: CalendarProps<T>) {
   const { isRTL, localization, renderCell, selectedDate, onDateChange, events } = props;
 
@@ -32,90 +33,45 @@ function Calendar<T extends Event>(props: CalendarProps<T>) {
     onDateChange?.(date);
   };
 
-  const handleViewModeChange = (mode: ViewMode) => {
-    setViewMode(mode);
+  const handleNavigate = (direction: 'prev' | 'next') => {
+    console.log('Navigate', direction);
   };
+
 
   return (
     <View style={styles.calendar}>
-      <Text style={styles.calendarText}>Calendar Component Placeholder 3</Text>
-      {slotViews.map((view, index) => (
-        <CalendarView key={`${view.month}-${view.year}-${view.week}`} {...view} 
-        mode={viewMode}
-        events={events} 
-        isRTL={isRTL} 
-        localization={localization} 
-        renderCell={renderCell} 
-        selectedDate={selectedDate} 
-        onDateChange={handleDateChange}
-        />
-      ))}
+      <CalendarHeader
+          selectedDate={currentDate}
+          mode={viewMode}
+          onModeToggle={() => setViewMode(x => x === 'month' ? 'week' : 'month')}
+          onNavigate={handleNavigate}/>
+      <CalendarSwiper slotViews={slotViews} callbackfn={(view, index) => (
+          <CalendarView key={`${view.month}-${view.year}-${view.week}`} {...view}
+                        mode={viewMode}
+                        events={events}
+                        isRTL={isRTL}
+                        localization={localization}
+                        renderCell={renderCell}
+                        selectedDate={selectedDate}
+                        onDateChange={handleDateChange}
+          />
+      )}/>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   calendar: {
-    height: 300,
-    backgroundColor: '#f8f8f8',
-    justifyContent: 'center',
     alignItems: 'center',
-    borderBottomWidth: 1,
+    backgroundColor: '#f8f8f8',
     borderBottomColor: '#e0e0e0',
-  },
-  calendarText: {
-    fontSize: 16,
-    color: '#666',
+    borderBottomWidth: 1,
+    height: 300,
+    justifyContent: 'center',
   },
 });
 
 export default Calendar;
-
-interface CalendarViewProps<T extends Event> {
-  mode: ViewMode;
-  isRTL?: boolean;
-  localization?: LocalizationSettings;
-  renderCell?: (date: Date, events: Event[]) => React.ReactNode;
-  selectedDate?: Date;
-  onDateChange?: (date: Date) => void;
-  month: number;
-  year: number;
-  week: number;
-  events?: T[];
-}
-
-function CalendarView<T extends Event>(props: CalendarViewProps<T>) {
-  const { isRTL, localization, renderCell: customRenderCell, selectedDate, onDateChange, events } = props;
-
-  const renderCell = customRenderCell || defaultRenderCell;
-
-  return (
-    <View style={styles.calendar}>
-      <Text style={styles.calendarText}>{props.mode} {props.month} {props.year} {props.week}</Text>
-    </View>
-  );
-}
-
-
-function defaultRenderCell(date: Date, events: Event[], isRTL: boolean) {
-  const styles = StyleSheet.create({
-    cell: {
-      width: 30,
-      height: 30,
-    },
-    cellText: {
-      fontSize: 12,
-      color: '#666',
-      writingDirection: isRTL ? 'rtl' : 'ltr',
-    },
-  });
-  return (
-  <View style={styles.cell}>
-    { /* TODO: Render week days */}
-    { /* TODO: Render month dates table */}
-  </View>
-  );
-}
 
 
 function getSlotViews(date: Date) : SlotView[] {
