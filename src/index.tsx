@@ -1,37 +1,49 @@
-import { View, Text, StyleSheet } from 'react-native';
 import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-export interface AgendaCalendarProps {
-  events?: Array<{
-    id: string;
-    title: string;
-    date: Date;
-  }>;
-  onEventPress?: (event: { id: string; title: string; date: Date }) => void;
+/**
+ * Represents a calendar event
+ */
+export interface Event {
+  id: string;
+  title: string;
+  date: Date;
 }
 
-export const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ 
-  events = [], 
-  onEventPress 
-}) => {
+/**
+ * Props for the AgendaCalendar component
+ */
+export interface AgendaCalendarProps {
+  /** Array of events to display */
+  events?: Event[];
+  /** Callback fired when an event is pressed */
+  onEventPress?: (event: Event) => void;
+}
+
+/**
+ * A calendar component that displays events in an agenda format
+ */
+function AgendaCalendar(props: AgendaCalendarProps) {
+  const { events = [], onEventPress } = props;
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Agenda Calendar</Text>
       {events.map((event) => (
-        <View 
+        <TouchableOpacity 
           key={event.id} 
           style={styles.eventContainer}
-          onTouchEnd={() => onEventPress?.(event)}
+          onPress={() => onEventPress?.(event)}
         >
           <Text style={styles.eventTitle}>{event.title}</Text>
           <Text style={styles.eventDate}>
             {event.date.toLocaleDateString()}
           </Text>
-        </View>
+        </TouchableOpacity>
       ))}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

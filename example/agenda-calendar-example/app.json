@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "agenda-calendar-example",
+    "slug": "agenda-calendar-example",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+} 
