@@ -1,5 +1,5 @@
 import {Event, LocalizationSettings} from "../types";
-import {StyleSheet, Text, View, TouchableOpacity, Dimensions} from "react-native";
+import {StyleSheet, Text, View, TouchableOpacity, Dimensions, Animated, PanResponder, PanResponderGestureState} from "react-native";
 import React, {useMemo} from "react";
 
 import {ViewMode} from "./types";
@@ -15,9 +15,14 @@ interface CalendarViewProps<T extends Event> {
   year: number;
   week: number;
   events?: T[];
+  onNavigate?: (direction: 'prev' | 'next') => void;
+  style?: any;
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
+
+const SWIPE_THRESHOLD = 50;
+const SWIPE_VELOCITY_THRESHOLD = 0.3;
 
 export function CalendarView<T extends Event>(props: CalendarViewProps<T>) {
   const {
@@ -30,7 +35,8 @@ export function CalendarView<T extends Event>(props: CalendarViewProps<T>) {
     month,
     year,
     week,
-    mode
+    mode,
+    style,
   } = props;
 
   const renderCell = customRenderCell || defaultRenderCell;
@@ -84,12 +90,16 @@ export function CalendarView<T extends Event>(props: CalendarViewProps<T>) {
   };
 
   return (
-    <View style={[
-      styles.container,
-      mode === 'week' && styles.weekContainer
-    ]}>
+    <View
+      style={[
+        styles.container,
+        mode === 'week' && styles.weekContainer,
+        style,
+      ]}
+    >
+      <Text>{month}</Text>
       <View style={[styles.weekDaysContainer, isRTL && styles.containerRTL]}>
-        {localization?.weekDayNames.map((day, index) => (
+        {(localization?.weekDayNames || []).map((day, index) => (
           <View key={index} style={styles.weekDayCell}>
             <Text style={styles.weekDayText}>{day}</Text>
           </View>
@@ -149,13 +159,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     elevation: 3,
-    height: 410,
+    height: '100%',
     padding: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    width: SCREEN_WIDTH,
+    flexDirection: 'column',
   },
   containerRTL: {
      flexDirection: 'row-reverse',
@@ -164,10 +174,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 5,
     flex: 1,
-    height: 55,
     justifyContent: 'center',
     margin: 2,
-    minWidth: 40,
+    minHeight: 40,
   },
   dateCellText: {
     color: '#333',
@@ -186,6 +195,8 @@ const styles = StyleSheet.create({
   },
   monthContainer: {
     flex: 1,
+    width: '100%',
+    flexDirection: 'column',
   },
   outOfMonthDate: {
     backgroundColor: '#f8f8f8',
@@ -200,24 +211,29 @@ const styles = StyleSheet.create({
   weekDayCell: {
     alignItems: 'center',
     flex: 1,
+    justifyContent: 'center',
+    paddingVertical: 4,
   },
   weekDayText: {
     color: '#666',
     fontSize: 12,
     fontWeight: '600',
+    textAlign: 'center',
   },
   weekDaysContainer: {
     borderBottomColor: '#eee',
     borderBottomWidth: 1,
     flexDirection: 'row',
-    height: 35,
-    marginBottom: 8,
-    paddingBottom: 8,
+    height: 30,
+    marginBottom: 4,
+    paddingBottom: 4,
     width: '100%',
+    flexShrink: 0,
   },
   weekRow: {
     flexDirection: 'row',
-    height: 60,
+    flex: 1,
     width: '100%',
+    minHeight: 50,
   },
 });

@@ -42,23 +42,25 @@ function Calendar<T extends Event>(props: CalendarProps<T>) {
   return (
     <View style={styles.calendar}>
       <CalendarHeader
-          isRTL={isRTL}
-          localization={localization}
-          selectedDate={currentDate}
-          mode={viewMode}
-          onModeToggle={() => setViewMode(x => x === 'month' ? 'week' : 'month')}
-          onNavigate={handleNavigate}/>
-      <CalendarSwiper slotViews={slotViews} callbackfn={(view, index) => (
-          <CalendarView key={`${view.month}-${view.year}-${view.week}`} {...view}
-                        mode={viewMode}
-                        events={events}
-                        isRTL={isRTL}
-                        localization={localization}
-                        renderCell={renderCell}
-                        selectedDate={selectedDate}
-                        onDateChange={handleDateChange}
-          />
-      )}/>
+        isRTL={isRTL}
+        localization={localization}
+        selectedDate={currentDate}
+        mode={viewMode}
+        onModeToggle={() => setViewMode(x => x === 'month' ? 'week' : 'month')}
+        onNavigate={handleNavigate}
+      />
+      <CalendarSwiper
+        mode={viewMode}
+        events={events}
+        isRTL={isRTL}
+        localization={localization}
+        renderCell={renderCell}
+        selectedDate={selectedDate}
+        onDateChange={handleDateChange}
+        initialMonth={currentDate.getMonth() + 1}
+        initialYear={currentDate.getFullYear()}
+        initialWeek={getMonthWeekNumber(currentDate).week}
+      />
     </View>
   );
 }
