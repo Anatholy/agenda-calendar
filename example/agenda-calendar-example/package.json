@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^13.0.0",
-    "@expo/webpack-config": "^19.0.0",
+    "@expo/webpack-config": "^19.0.1",
     "agenda-calendar": "file:../..",
     "expo": "~49.0.0",
     "expo-constants": "~14.4.2",

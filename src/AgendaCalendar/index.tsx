@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, I18nManager } from 'react-native';
 import { AgendaCalendarProps, Event } from '../';
 import Calendar from '../Calendar';
@@ -14,10 +14,12 @@ function AgendaCalendar<T extends Event>(props: AgendaCalendarProps<T>) {
     localization
   } = props;
   
-  // Set RTL for the entire app context
-  if (I18nManager.isRTL !== isRTL) {
-    I18nManager.forceRTL(isRTL);
-  }
+  useEffect(() => {
+    if (I18nManager.isRTL !== isRTL) {
+      I18nManager.forceRTL(isRTL);
+    }
+  }, [isRTL]);
+
   
   return (
     <View style={[

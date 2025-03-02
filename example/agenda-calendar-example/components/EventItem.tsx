@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, SafeAreaView, Platform } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, Text } from 'react-native';
 import { EventType, ExtendedEvent } from '../types/types';
 
 
@@ -30,39 +30,39 @@ const isBorderRTL = (isRTL: boolean) => {
     return isRTL;
 };
 
-export function EventItem ({event, isRTL}:{event: ExtendedEvent, isRTL: boolean}) { 
-    
+export const EventItem  = ({event, isRTL}:{event: ExtendedEvent, isRTL: boolean}) => {
+
     return (
         <View style={[
-        styles.eventItem, 
-        { 
-            borderLeftWidth: isBorderRTL(isRTL) ? 0 : 4,
-            borderRightWidth: isBorderRTL(isRTL) ? 4: 0,
-            borderLeftColor: EVENT_TYPE_CONFIG[event.type].color,
-            borderRightColor: EVENT_TYPE_CONFIG[event.type].color,
-        }
+            styles.eventItem,
+            {
+                borderLeftWidth: isBorderRTL(isRTL) ? 0 : 4,
+                borderRightWidth: isBorderRTL(isRTL) ? 4: 0,
+                borderLeftColor: EVENT_TYPE_CONFIG[event.type].color,
+                borderRightColor: EVENT_TYPE_CONFIG[event.type].color,
+            }
         ]}>
-        <View style={[styles.eventHeader, isRTL && styles.containerRTL]}>
-            <View style={[styles.titleContainer, isRTL && styles.containerRTL]}>
-            <Text style={[styles.icon, styles.avatar, isRTL && styles.iconRTL]}>
-                {EVENT_TYPE_CONFIG[event.type].icon}
-            </Text>
-            <Text style={[styles.eventTitle, isRTL && styles.rtlText]}>
-                {event.title}
-            </Text>
+            <View style={[styles.eventHeader, isRTL && styles.containerRTL]}>
+                <View style={[styles.titleContainer, isRTL && styles.containerRTL]}>
+                <Text style={[styles.icon, styles.avatar, isRTL && styles.iconRTL]}>
+                    {EVENT_TYPE_CONFIG[event.type].icon}
+                </Text>
+                <Text style={[styles.eventTitle, isRTL && styles.rtlText]}>
+                    {event.title}
+                </Text>
+                </View>
+                <Text style={[styles.eventTime, isRTL && styles.rtlText]}>
+                {event.startTime} - {event.endTime}
+                </Text>
             </View>
-            <Text style={[styles.eventTime, isRTL && styles.rtlText]}>
-            {event.startTime} - {event.endTime}
-            </Text>
-        </View>
-        <View style={[styles.eventDetails,isRTL && styles.containerRTL]}>
-            <Text style={[styles.icon, isRTL && styles.iconRTL]}>
-                📍
-            </Text>
-            <Text style={[styles.eventLocation, isRTL && styles.rtlText]}>
-                {event.location}
-            </Text>
-        </View>
+            <View style={[styles.eventDetails,isRTL && styles.containerRTL]}>
+                <Text style={[styles.icon, isRTL && styles.iconRTL]}>
+                    📍
+                </Text>
+                <Text style={[styles.eventLocation, isRTL && styles.rtlText]}>
+                    {event.location}
+                </Text>
+            </View>
         </View>
     );
 }
@@ -70,12 +70,29 @@ export function EventItem ({event, isRTL}:{event: ExtendedEvent, isRTL: boolean}
 
 
 const styles = StyleSheet.create({
+    avatar: {
+        fontSize: 24,
+    },
+    containerRTL: {
+        flexDirection: 'row-reverse',
+    },
+    eventDetails: {
+        flexDirection: 'row',
+        marginTop: 4,
+    },
+    eventHeader: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 8,
+    },
     eventItem: {
         backgroundColor: '#ffffff',
         borderRadius: 10,
-        padding: 15,
-        marginVertical: 5,
+        elevation: 3,
         marginHorizontal: 10,
+        marginVertical: 5,
+        padding: 15,
         shadowColor: '#000',
         shadowOffset: {
         width: 0,
@@ -83,54 +100,37 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.1,
         shadowRadius: 3,
-        elevation: 3,
     },
-    eventHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
+    eventLocation: {
+        color: '#666',
+        fontSize: 14,
     },
-    titleContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
+    eventTime: {
+        color: '#666',
+        fontSize: 14,
+        marginLeft: 8,
+    },
+    eventTitle: {
+        color: '#1a1a1a',
         flex: 1,
-    },
-    containerRTL: {
-        flexDirection: 'row-reverse',
-    },
-    avatar: {
-        fontSize: 24,
+        fontSize: 16,
+        fontWeight: '600',
     },
     icon: {
         fontSize: 16,
         marginRight: 8,
     },
     iconRTL: {
+        marginLeft: 8,
         marginRight: 0,
-        marginLeft: 8,
-    },
-    eventTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#1a1a1a',
-        flex: 1,
-    },
-    eventTime: {
-        fontSize: 14,
-        color: '#666',
-        marginLeft: 8,
-    },
-    eventDetails: {
-        marginTop: 4,
-        flexDirection: 'row',
-    },
-    eventLocation: {
-        fontSize: 14,
-        color: '#666',
     },
     rtlText: {
         textAlign: 'right',
         writingDirection: 'rtl',
     },
-}); 
+    titleContainer: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        flex: 1,
+    },
+});

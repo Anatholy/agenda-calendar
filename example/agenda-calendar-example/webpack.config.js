@@ -16,6 +16,8 @@ module.exports = async function (env, argv) {
       'react-native$': 'react-native-web',
       'react-native-web': path.resolve(__dirname, 'node_modules/react-native-web'),
       'agenda-calendar': path.resolve(__dirname, '../../src'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+      'react': path.resolve(__dirname, 'node_modules/react'),
     },
     extensions: ['.web.js', '.web.jsx', '.web.ts', '.web.tsx', ...config.resolve.extensions],
   };
