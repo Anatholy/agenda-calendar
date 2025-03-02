@@ -1,7 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { AgendaCalendarProps, Event } from '../types';
+import { LocalizationSettings } from '../types';
 
-function Calendar() {
+interface CalendarProps {
+  isRTL?: boolean;
+  localization?: LocalizationSettings;
+  renderCell?: (date: Date, events: Event[]) => React.ReactNode;
+  selectedDate?: Date;
+  onDateChange?: (date: Date) => void;
+}
+function Calendar(props: CalendarProps) {
   return (
     <View style={styles.calendar}>
       <Text style={styles.calendarText}>Calendar Component Placeholder</Text>

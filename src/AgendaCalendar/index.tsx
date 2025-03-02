@@ -23,7 +23,6 @@ function AgendaCalendar<T extends Event>(props: AgendaCalendarProps<T>) {
     <View style={[
       styles.container, 
       style,
-      isRTL && styles.rtlContainer
     ]}>
       <Calendar isRTL={isRTL} localization={localization} />
       <EventList<T>
@@ -40,9 +39,6 @@ function AgendaCalendar<T extends Event>(props: AgendaCalendarProps<T>) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  rtlContainer: {
-    writingDirection: 'rtl',
   },
 });
 

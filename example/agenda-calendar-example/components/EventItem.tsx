@@ -24,9 +24,9 @@ const EVENT_TYPE_CONFIG: Record<EventType, { color: string; icon: string }> = {
 
 
 const isBorderRTL = (isRTL: boolean) => {
-    if (Platform.OS === 'android') {
-        return !isRTL;
-    }
+    // if (Platform.OS === 'android') {
+    //     return !isRTL;
+    // }
     return isRTL;
 };
 
