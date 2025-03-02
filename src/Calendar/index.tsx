@@ -41,6 +41,8 @@ function Calendar<T extends Event>(props: CalendarProps<T>) {
   return (
     <View style={styles.calendar}>
       <CalendarHeader
+          isRTL={isRTL}
+          localization={localization}
           selectedDate={currentDate}
           mode={viewMode}
           onModeToggle={() => setViewMode(x => x === 'month' ? 'week' : 'month')}
