@@ -30,6 +30,7 @@ function Calendar<T extends Event>(props: CalendarProps<T>) {
 
   const handleDateChange = (date: Date) => {
     setCurrentDate(date);
+    setViewMode('week');
     onDateChange?.(date);
   };
 
