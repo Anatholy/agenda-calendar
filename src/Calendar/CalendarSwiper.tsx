@@ -39,6 +39,17 @@ export function CalendarSwiper<T extends Event>(props: CalendarSwiperProps<T>) {
         onMonthChange,
     } = props;
 
+    // Add debug log when component receives props
+    console.log('CalendarSwiper props mode:', mode);
+
+    // Create a ref to track the current mode
+    const modeRef = React.useRef(mode);
+    
+    // Keep the ref updated with the latest mode
+    useEffect(() => {
+        modeRef.current = mode;
+    }, [mode]);
+
     const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
 
     useEffect(() => {
@@ -49,7 +60,7 @@ export function CalendarSwiper<T extends Event>(props: CalendarSwiperProps<T>) {
         return () => subscription.remove();
     }, []);
 
-    const [calendars, setCalendars] = useState(getSlotViews(selectedDate, mode));
+    const [calendars, setCalendars] = useState([] as Week[]);
 
     const position = React.useRef(new Animated.Value(0)).current;
     const [swiping, setSwiping] = React.useState(false);
@@ -97,9 +108,12 @@ export function CalendarSwiper<T extends Event>(props: CalendarSwiperProps<T>) {
         }
     };
 
-    useEffect(() =>
-            setCalendars(getSlotViews(selectedDate, mode)),
-        [mode, selectedDate]);
+    useEffect(() => {
+        console.log('getSlotViews called with mode:', mode);
+        const c = getSlotViews(selectedDate, mode);
+        setCalendars(c);
+        onMonthChange(c[1]);
+    }, [mode, selectedDate]);
 
     useEffect(() => {
         if (calendars.length > 0) {
@@ -108,21 +122,54 @@ export function CalendarSwiper<T extends Event>(props: CalendarSwiperProps<T>) {
     }, [calendars, onMonthChange]);
 
     const handleNavigate = useCallback((direction: 'prev' | 'next') => {
+        // Use modeRef.current to ensure we have the latest mode value
+        const currentMode = modeRef.current;
+        console.log('handleNavigate called with mode:', currentMode);
+        
         setCalendars(currentCalendars => {
             if (direction === 'next') {
-                const newNext = getNextMonth(currentCalendars[2], mode);
+                const newNext = getNextMonth(currentCalendars[2], currentMode);
+                console.log('getNextMonth called with:', {current: currentCalendars[2], mode: currentMode});
+                console.log('getNextMonth result:', newNext);
                 return [currentCalendars[1], currentCalendars[2], newNext];
             } else {
-                const newPrev = getPrevMonth(currentCalendars[0], mode);
+                const newPrev = getPrevMonth(currentCalendars[0], currentMode);
+                console.log('getPrevMonth called with:', {current: currentCalendars[0], mode: currentMode});
+                console.log('getPrevMonth result:', newPrev);
                 return [newPrev, currentCalendars[0], currentCalendars[1]];
             }
         });
-    }, [mode]);
+    }, []); // Remove mode from dependencies since we're using ref
 
     // Add effect to reset position when mode changes
     useEffect(() => {
+        console.log('mode changed', mode);
         position.setValue(0);
     }, [mode]);
+
+    // Add animated value for height
+    const heightAnim = React.useRef(new Animated.Value(mode === 'week' ? 115 : 380)).current;
+
+    // Add animation progress value (0 = week mode, 1 = month mode)
+    const modeProgress = React.useRef(new Animated.Value(mode === 'week' ? 0 : 1)).current;
+
+    // Update both height and mode progress animations when mode changes
+    useEffect(() => {
+        Animated.parallel([
+            Animated.timing(heightAnim, {
+                toValue: mode === 'week' ? 115 : 380,
+                duration: 300,
+                useNativeDriver: false,
+            }),
+            Animated.timing(modeProgress, {
+                toValue: mode === 'week' ? 0 : 1,
+                duration: 300,
+                useNativeDriver: true,
+            })
+        ]).start();
+        
+        position.setValue(0);
+    }, [mode, heightAnim, modeProgress]);
 
     return (
         <Animated.View
@@ -130,7 +177,7 @@ export function CalendarSwiper<T extends Event>(props: CalendarSwiperProps<T>) {
                 styles.container,
                 {
                     width: dimensions.width,
-                    height: mode === 'week' ? 115 : 380,
+                    height: heightAnim,
                 }
             ]}
             {...panResponder.panHandlers}
@@ -154,6 +201,7 @@ export function CalendarSwiper<T extends Event>(props: CalendarSwiperProps<T>) {
                             {...props}
                             theWeek={calendar}
                             style={styles.calendar}
+                            modeProgress={modeProgress}
                         />
                     </View>
                 ))}
@@ -177,118 +225,120 @@ const styles = StyleSheet.create({
     },
     container: {
         backgroundColor: '#fff',
-        height: 380,
         overflow: 'hidden',
         position: 'relative',
+        // Remove fixed height from here since we're animating it
     },
 });
 
 
-function getCurrentMonth(selectedDate: Date) : Week {
-  const res = getMonthWeekNumber(selectedDate);
-  return {
-    month: selectedDate.getMonth() + 1,
-    year: selectedDate.getFullYear(),
-    week: res.week,
-  };
+function getCurrentMonth(selectedDate: Date): Week {
+    const res = getMonthWeekNumber(selectedDate);
+    return {
+        month: selectedDate.getMonth() + 1,
+        year: selectedDate.getFullYear(),
+        week: res.week,
+    };
 }
 
 function getSlotViews(selectedDate: Date, mode: "month" | "week") {
-  const current: Week = getCurrentMonth(selectedDate);
-  const prev = getPrevMonth(current, mode);
-  const next = getNextMonth(current, mode);
-  return [prev, current, next];
+    const current: Week = getCurrentMonth(selectedDate);
+    const prev = getPrevMonth(current, mode);
+    console.log('getSlotViews', current, mode);
+    const next = getNextMonth(current, mode);
+    return [prev, current, next];
 }
 
 interface Week extends Month { week: number }
 function getNextMonth(current: Week, mode: ViewMode) : Week {
-  if (mode === 'month') {
-    if (current.month === 12) {
-      return {month: 1, year: current.year + 1, week: -1};
+    console.log('getNextMonth input:', {current, mode});
+    if (mode === 'month') {
+        if (current.month === 12) {
+            return {month: 1, year: current.year + 1, week: -1};
+        }
+        return {month: current.month + 1, year: current.year, week: -1};
     }
-    return {month: current.month + 1, year: current.year, week: -1};
-  }
-  // For week mode, check if next week is in the next month
-  const lastDate = new Date(current.year, current.month, 0);
-  const lastWeek = getMonthWeekNumber(lastDate);
-  if (current.week < lastWeek.week) {
+    // For week mode, check if next week is in the next month
+    const lastDate = new Date(current.year, current.month, 0);
+    const lastWeek = getMonthWeekNumber(lastDate);
+    if (current.week < lastWeek.week) {
+        return {
+            month: current.month,
+            year: current.year,
+            week: current.week + 1,
+        };
+    }
+    const nextWeekStart = addWeeks(lastWeek.firstInTheWeek, 1);
+    const nextWeek = getMonthWeekNumber(nextWeekStart);
     return {
-      month: current.month,
-      year: current.year,
-      week: current.week + 1,
-    };
-  }
-  const nextWeekStart = addWeeks(lastWeek.firstInTheWeek, 1);
-  const nextWeek = getMonthWeekNumber(nextWeekStart);
-  return {
-    month: nextWeek.firstInTheWeek.getMonth() + 1,
-    year: nextWeek.firstInTheWeek.getFullYear(),
-    week: nextWeek.week
-  }
+        month: nextWeek.firstInTheWeek.getMonth() + 1,
+        year: nextWeek.firstInTheWeek.getFullYear(),
+        week: nextWeek.week
+    }
 }
 
 function getPrevMonth(current: Week, mode: ViewMode) : Week {
-  if (mode === 'month') {
-    if (current.month === 1) {
-      return {month: 12, year: current.year - 1, week: -1};
+    if (mode === 'month') {
+        if (current.month === 1) {
+            return {month: 12, year: current.year - 1, week: -1};
+        }
+        return {month: current.month - 1, year: current.year, week: -1};
     }
-    return {month: current.month - 1, year: current.year, week: -1};
-  }
 
-  if (current.week > 0) {
+    if (current.week > 0) {
+        return {
+            month: current.month,
+            year: current.year,
+            week: current.week - 1,
+        };
+    }
+
+    const firstDate = new Date(current.year, current.month - 1, 1);
+    const firstWeek = getMonthWeekNumber(firstDate);
+    const prevWeekStart = addWeeks(firstWeek.firstInTheWeek, -1);
+    const prevWeek = getMonthWeekNumber(prevWeekStart);
     return {
-      month: current.month,
-      year: current.year,
-      week: current.week - 1,
-    };
-  }
-
-  const firstDate = new Date(current.year, current.month - 1, 1);
-  const firstWeek = getMonthWeekNumber(firstDate);
-  const prevWeekStart = addWeeks(firstWeek.firstInTheWeek, -1);
-  const prevWeek = getMonthWeekNumber(prevWeekStart);
-  return {
-    month: prevWeek.firstInTheWeek.getMonth() + 1,
-    year: prevWeek.firstInTheWeek.getFullYear(),
-    week: prevWeek.week
-  }
+        month: prevWeek.firstInTheWeek.getMonth() + 1,
+        year: prevWeek.firstInTheWeek.getFullYear(),
+        week: prevWeek.week
+    }
 }
 
 function getMonthWeekNumber(date: Date): { week: number, firstInTheWeek: Date } {
-  // Clone the date to avoid modifying the original
-  const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    // Clone the date to avoid modifying the original
+    const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-  // Get first day of the month
-  const firstDayOfMonth = new Date(targetDate.getFullYear(), targetDate.getMonth(), 1);
+    // Get first day of the month
+    const firstDayOfMonth = new Date(targetDate.getFullYear(), targetDate.getMonth(), 1);
 
-  // Find first Sunday before or on the first day of month
-  const firstSundayOfCalendar = new Date(firstDayOfMonth);
-  while (firstSundayOfCalendar.getDay() !== 0) {
-    firstSundayOfCalendar.setDate(firstSundayOfCalendar.getDate() - 1);
-  }
+    // Get the first day of the week containing the first day of month
+    const firstWeekStart = new Date(firstDayOfMonth);
+    while (firstWeekStart.getDay() !== 0) {
+        firstWeekStart.setDate(firstWeekStart.getDate() - 1);
+    }
 
-  // Find the Sunday that starts the week containing our target date
-  const firstDateOfTargetWeek = new Date(targetDate);
-  while (firstDateOfTargetWeek.getDay() !== 0) {
-    firstDateOfTargetWeek.setDate(firstDateOfTargetWeek.getDate() - 1);
-  }
+    // Get the start of the week containing our target date
+    const targetWeekStart = new Date(targetDate);
+    while (targetWeekStart.getDay() !== 0) {
+        targetWeekStart.setDate(targetWeekStart.getDate() - 1);
+    }
 
-  // Calculate week number by counting Sundays between first Sunday and target week's Sunday
-  const millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000;
-  const weekNumber = Math.floor(
-      (firstDateOfTargetWeek.getTime() - firstSundayOfCalendar.getTime()) / millisecondsPerWeek
-  );
+    // Calculate week number (0-based)
+    const millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const weekNumber = Math.floor(
+        (targetWeekStart.getTime() - firstWeekStart.getTime()) / millisecondsPerWeek
+    );
 
-  return {
-    week: weekNumber,
-    firstInTheWeek: firstDateOfTargetWeek
-  };
+    return {
+        week: weekNumber,
+        firstInTheWeek: targetWeekStart
+    };
 }
 
 function addWeeks(firstInTheWeek: Date, number: number): Date {
-  return new Date(
-      firstInTheWeek.getFullYear(),
-      firstInTheWeek.getMonth(),
-      firstInTheWeek.getDate() + number * 7
-  );
+    return new Date(
+        firstInTheWeek.getFullYear(),
+        firstInTheWeek.getMonth(),
+        firstInTheWeek.getDate() + number * 7
+    );
 }

@@ -19,9 +19,10 @@ interface CalendarViewProps<T extends Event> {
   events?: T[];
   onNavigate?: (direction: 'prev' | 'next') => void;
   style?: any;
+  modeProgress: Animated.Value;
 }
 
-export function CalendarView<T extends Event>(props: CalendarViewProps<T>) {
+export function CalendarView<T extends Event>({ modeProgress, ...props }: CalendarViewProps<T>) {
   const {
     isRTL,
     localization,
@@ -96,47 +97,71 @@ export function CalendarView<T extends Event>(props: CalendarViewProps<T>) {
     });
   };
 
+  // Calculate the target Y position for the current week
+  const selectedWeekIndex = calendarDates.findIndex(week => 
+    week.some(date => 
+      selectedDate && 
+      date.getDate() === selectedDate.getDate() &&
+      date.getMonth() === selectedDate.getMonth() &&
+      date.getFullYear() === selectedDate.getFullYear()
+    )
+  ) || 0;
+  const weekOffset = selectedWeekIndex * 40; // Assuming each week row is 40 pixels high
+
+  // Interpolate Y position based on mode progress
+  const translateY = modeProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-weekOffset, 0] // In week mode, shift up to show selected week
+  });
+
   return (
-    <View
-      style={[
-        styles.container,
-        style,
-      ]}
-    >
+    <View style={style}>
       <View style={[styles.weekDaysContainer, isRTL && styles.containerRTL]}>
         {(localization?.weekDayNames || []).map((day, index) => (
           <View key={index} style={styles.weekDayCell}>
-            <Text style={styles.weekDayText}>{day}</Text>
+            <Text style={styles.weekDayText}>{day}{theWeek.week}</Text>
           </View>
         ))}
       </View>
 
-      <View style={styles.monthContainer}>
-        {calendarDates.map((weekRow, weekIndex) => (
-          <View
-            key={weekIndex}
-            style={[
-              styles.weekRow,
-              isRTL && styles.containerRTL,
-            ]}
-          >
-            {weekRow.map((date, dateIndex) => (
-              <TouchableOpacity
-                key={dateIndex}
-                onPress={() => onDateChange?.(date)}
-                style={[
-                  styles.dateCell,
-                  date.getMonth() !== theWeek.month - 1 && styles.outOfMonthDate,
-                  selectedDate?.getDate() === date.getDate() &&
-                  selectedDate?.getMonth() === date.getMonth() &&
-                  styles.selectedDate
-                ]}
-              >
-                {renderCell(date, getEventsForDate(date), isRTL || false)}
-              </TouchableOpacity>
-            ))}
-          </View>
-        ))}
+      <View style={[
+        styles.monthContainer,
+        mode === 'week' && styles.weekModeContainer,
+      ]}>
+        <Animated.View
+          style={{
+            transform: [{translateY}]
+          }}
+        >
+          {calendarDates.map((weekRow, weekIndex) => (
+            <View
+              key={weekIndex}
+              style={[
+                styles.weekRow,
+                isRTL && styles.containerRTL,
+                mode === 'week' && {
+                  transform: [{ translateY: -(theWeek.week - 1) * 50 }] // 50 is the weekRow height
+                }
+              ]}
+            >
+              {weekRow.map((date, dateIndex) => (
+                <TouchableOpacity
+                  key={dateIndex}
+                  onPress={() => onDateChange?.(date)}
+                  style={[
+                    styles.dateCell,
+                    date.getMonth() !== theWeek.month - 1 && styles.outOfMonthDate,
+                    selectedDate?.getDate() === date.getDate() &&
+                    selectedDate?.getMonth() === date.getMonth() &&
+                    styles.selectedDate
+                  ]}
+                >
+                  {renderCell(date, getEventsForDate(date), isRTL || false)}
+                </TouchableOpacity>
+              ))}
+            </View>
+          ))}
+        </Animated.View>
       </View>
     </View>
   );
@@ -239,5 +264,8 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 50,
     width: '100%',
+  },
+  weekModeContainer: {
+    overflow: 'hidden', // Hide other weeks in week mode
   },
 });
