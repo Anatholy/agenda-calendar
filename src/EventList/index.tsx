@@ -8,6 +8,7 @@ interface EventListProps<T extends Event> {
   renderItem?: (event: T) => React.ReactElement;
   isRTL: boolean;
   localization: LocalizationSettings;
+  selectedDate: Date;
 }
 
 function EventList<T extends Event>({
@@ -15,7 +16,8 @@ function EventList<T extends Event>({
   onEventPress,
   renderItem,
   isRTL,
-  localization
+  localization,
+  selectedDate,
 }: EventListProps<T>) {
   const defaultRenderItem = (event: T) => (
     <View style={styles.eventContainer}>

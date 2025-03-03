@@ -11,18 +11,15 @@ interface CalendarViewProps<T extends Event> {
   renderCell?: (date: Date, events: Event[]) => React.ReactNode;
   selectedDate?: Date;
   onDateChange?: (date: Date) => void;
-  month: number;
-  year: number;
-  week: number;
+  theWeek: {
+    month: number;
+    year: number;
+    week: number;
+  },
   events?: T[];
   onNavigate?: (direction: 'prev' | 'next') => void;
   style?: any;
 }
-
-const SCREEN_WIDTH = Dimensions.get('window').width;
-
-const SWIPE_THRESHOLD = 50;
-const SWIPE_VELOCITY_THRESHOLD = 0.3;
 
 export function CalendarView<T extends Event>(props: CalendarViewProps<T>) {
   const {
@@ -32,53 +29,63 @@ export function CalendarView<T extends Event>(props: CalendarViewProps<T>) {
     selectedDate,
     onDateChange,
     events = [],
-    month,
-    year,
-    week,
+    theWeek,
     mode,
     style,
   } = props;
+
+  const heightAnim = React.useRef(new Animated.Value(mode === 'week' ? 115 : 380)).current;
+
+  React.useEffect(() => {
+    Animated.spring(heightAnim, {
+      toValue: mode === 'week' ? 115 : 380,
+      friction: 8,
+      tension: 40,
+      useNativeDriver: false,
+    }).start();
+  }, [mode]);
 
   const renderCell = customRenderCell || defaultRenderCell;
 
   const calendarDates = useMemo(() => {
 
-    const firstDay = new Date(year, month - 1, 1);
-    const lastDay = new Date(year, month, 0);
+    const firstDay = new Date(theWeek.year, theWeek.month - 1, 1);
+    const lastDay = new Date(theWeek.year, theWeek.month, 0);
     const daysInMonth = lastDay.getDate();
     const startingDay = firstDay.getDay();
 
     const calendar: Date[][] = [];
-    let week: Date[] = [];
+    let weekDates: Date[] = [];
 
     // Fill empty cells at start with previous month dates
     for (let i = 0; i < startingDay; i++) {
-      week.push(new Date(year, month - 1, -startingDay + i + 1));
+      weekDates.push(new Date(theWeek.year, theWeek.month - 1, -startingDay + i + 1));
     }
 
     // Fill current month dates
     for (let day = 1; day <= daysInMonth; day++) {
-      week.push(new Date(year, month - 1, day));
+      weekDates.push(new Date(theWeek.year, theWeek.month - 1, day));
 
-      if (week.length === 7) {
-        calendar.push(week);
-        week = [];
+      if (weekDates.length === 7) {
+        calendar.push(weekDates);
+        weekDates = [];
       }
     }
 
     // Fill empty cells at end with next month dates
-    while (week.length < 7 && week.length > 0) {
-      const nextDay = new Date(year, month - 1, daysInMonth + week.length - startingDay + 1);
-      week.push(nextDay);
+    let nextMonthDay = 1;
+    while (weekDates.length < 7 && weekDates.length > 0) {
+      const nextDay = new Date(theWeek.year, theWeek.month, nextMonthDay++);
+      weekDates.push(nextDay);
     }
 
-    if (week.length > 0) {
-      calendar.push(week);
+    if (weekDates.length > 0) {
+      calendar.push(weekDates);
     }
 
     return calendar;
 
-  }, [year, month, week, mode]);
+  }, [theWeek, mode]);
 
   const getEventsForDate = (date: Date) => {
     return events.filter(event => {
@@ -93,11 +100,9 @@ export function CalendarView<T extends Event>(props: CalendarViewProps<T>) {
     <View
       style={[
         styles.container,
-        mode === 'week' && styles.weekContainer,
         style,
       ]}
     >
-      <Text>{month}</Text>
       <View style={[styles.weekDaysContainer, isRTL && styles.containerRTL]}>
         {(localization?.weekDayNames || []).map((day, index) => (
           <View key={index} style={styles.weekDayCell}>
@@ -106,19 +111,22 @@ export function CalendarView<T extends Event>(props: CalendarViewProps<T>) {
         ))}
       </View>
 
-      <View style={[
-          styles.monthContainer,
-          mode === 'week' && styles.weekContainer
-      ]}>
-        {calendarDates?.map((weekRow, weekIndex) => (
-          <View key={weekIndex} style={[styles.weekRow, isRTL && styles.containerRTL]}>
+      <View style={styles.monthContainer}>
+        {calendarDates.map((weekRow, weekIndex) => (
+          <View
+            key={weekIndex}
+            style={[
+              styles.weekRow,
+              isRTL && styles.containerRTL,
+            ]}
+          >
             {weekRow.map((date, dateIndex) => (
               <TouchableOpacity
                 key={dateIndex}
                 onPress={() => onDateChange?.(date)}
                 style={[
                   styles.dateCell,
-                  date.getMonth() !== month - 1 && styles.outOfMonthDate,
+                  date.getMonth() !== theWeek.month - 1 && styles.outOfMonthDate,
                   selectedDate?.getDate() === date.getDate() &&
                   selectedDate?.getMonth() === date.getMonth() &&
                   styles.selectedDate
@@ -159,13 +167,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     elevation: 3,
-    height: '100%',
+    flexDirection: 'column',
+    flex: 1,
     padding: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    flexDirection: 'column',
   },
   containerRTL: {
      flexDirection: 'row-reverse',
@@ -195,18 +203,14 @@ const styles = StyleSheet.create({
   },
   monthContainer: {
     flex: 1,
-    width: '100%',
     flexDirection: 'column',
+    width: '100%',
   },
   outOfMonthDate: {
     backgroundColor: '#f8f8f8',
   },
   selectedDate: {
     backgroundColor: '#e6f3ff',
-  },
-  weekContainer: {
-    height: 115,
-    overflow: 'hidden',
   },
   weekDayCell: {
     alignItems: 'center',
@@ -224,16 +228,16 @@ const styles = StyleSheet.create({
     borderBottomColor: '#eee',
     borderBottomWidth: 1,
     flexDirection: 'row',
+    flexShrink: 0,
     height: 30,
     marginBottom: 4,
     paddingBottom: 4,
     width: '100%',
-    flexShrink: 0,
   },
   weekRow: {
     flexDirection: 'row',
     flex: 1,
-    width: '100%',
     minHeight: 50,
+    width: '100%',
   },
 });

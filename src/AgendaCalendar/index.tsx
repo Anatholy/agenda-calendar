@@ -44,8 +44,14 @@ function AgendaCalendar<T extends Event>(props: AgendaCalendarProps<T>) {
       styles.container,
       style,
     ]}>
-      <Calendar isRTL={isRTL} localization={localization} />
+      <Calendar 
+        isRTL={isRTL} 
+        localization={localization} 
+        selectedDate={new Date()}
+        events={events}
+      />
       <EventList<T>
+        selectedDate={new Date()}
         events={events}
         onEventPress={onEventPress}
         renderItem={renderItem}
